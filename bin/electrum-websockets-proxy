@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+const { version } = require('../package.json')
+const { websockets, electrumProxy } = require('../config')
+const createProxy = require('../lib/proxy')
+
+const program = require('commander')
+  .version(version)
+  .option('-h, --host [value]', 'Bind proxy to specified host', websockets.host)
+  .option('-p, --port [value]', 'Bind proxy to specified port number', websockets.port)
+  .option('--path [value]', 'Bind proxy to specified path', websockets.path)
+  .option('--target <uri>', 'URI of proxied Electrumx server', (uri, mem) => (mem.push(uri), mem), [])
+  .option('--max-fails [n]', 'After <n> times try to connect to another Electrumx server', electrumProxy.maxFails)
+  .parse(process.argv)
+
+const websocket = {
+  host: program.host,
+  port: +program.port,
+  path: program.path
+}
+
+const settings = {
+  targets: program.targets,
+  maxFails: +program.maxFails
+}
+
+createProxy(websocket, settings)
